@@ -64,18 +64,18 @@
     pkcs7: bogus
     document:
       devpayProductCodes: null
-      availabilityZone: us-west-2c,
-      accountId: accountid,
-      privateIp: 1.1.1.1,
-      version: 2010-08-31,
-      region: us-west-2,
-      instanceId: i-id,
-      billingProducts: null,
-      instanceType: c3.xlarge,
-      imageId: ami-id,
-      pendingTime: 2016-08-25T16:22:18Z,
-      architecture: x86_64,
-      kernelId: null,
+      availabilityZone: us-west-2c
+      accountId: accountid
+      privateIp: 1.1.1.1
+      version: 2010-08-31
+      region: us-west-2
+      instanceId: i-id
+      billingProducts: null
+      instanceType: c3.xlarge
+      imageId: ami-id
+      pendingTime: 2016-08-25T16:22:18Z
+      architecture: x86_64
+      kernelId: null
       ramdiskId: null
     signature: signature
     rsa2048: rsa2048

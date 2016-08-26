@@ -30,7 +30,7 @@ module AWS
     end
 
     def self.cfn_dev_outputs_path
-      @dev_outputs_path || defined?(Rails) ? Rails.root.join('config') : ''
+      @dev_outputs_path ||= defined?(Rails) ? Rails.root.join('config') : ''
     end
   end
 end

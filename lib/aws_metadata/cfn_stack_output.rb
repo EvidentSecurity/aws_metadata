@@ -1,3 +1,6 @@
+require 'yaml'
+require 'active_support/core_ext/string/inflections'
+
 module AWS
   module StackOutput
     def self.get
