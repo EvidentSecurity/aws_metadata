@@ -1,0 +1,83 @@
+:metadata:
+  ami-id: ami-81b164e1
+  ami-id: ami-id
+  ami-launch-index: '0'
+  ami-manifest-path: (unknown)
+  block-device-mapping:
+    ami: /dev/sda1
+    root: /dev/sda1
+  hostname: ip.us-west-2.compute.internal
+  iam:
+    info:
+      Code: Success
+      LastUpdated: 2016-08-26T13:06:48Z
+      InstanceProfileArn: arn:aws:iam::account:instance-profile/Role
+      InstanceProfileId: Profile ID
+      security-credentials:
+        Role:
+          Code: Success
+          LastUpdated: 2016-08-26T13:08:20Z
+          Type: AWS-HMAC
+          AccessKeyId: access id
+          SecretAccessKey: secret key
+          Token: token
+          Expiration: 2016-08-26T19:21:06Z
+  instance-action: none
+  instance-id: i-id
+  instance-type: c3.xlarge
+  local-hostname: ip.us-west-2.compute.internal
+  local-ipv4: 1.1.1.1
+  mac: 1:1:1:1:1:1
+  metrics:
+    vhostmd: <?xml version=1.0 encoding=UTF-8?>
+  network:
+    interfaces:
+      macs:
+        1:1:1:1:1:1:
+          device-number: '0'
+          interface-id: eni-1
+          local-hostname: ip.us-west-2.compute.internal
+          local-ipv4s: 1.1.1.1
+          mac: 1:1:1:1:1:1
+          owner-id: 'accountid'
+          security-group-ids: sg-id
+          security-groups: SecurityGroup-111
+          subnet-id: subnet-1
+          subnet-ipv4-cidr-block: 1.1.1.1/24
+          vpc-id: vpc-id
+          vpc-ipv4-cidr-block: 1.1.1.1/21
+          vpc-ipv4-cidr-blocks: 1.1.1.1/21
+  placement:
+    availability-zone: us-west-2c
+  profile: default-hvm
+  public-keys:
+    dev:
+      openssh-key: 'key'
+  reservation-id: r-id
+  security-groups: SecurityGroup-111
+  services:
+    domain: amazonaws.com
+    partition: aws
+:user_data: 'user data'
+:dynamic:
+  instance-identity:
+    pkcs7: bogus
+    document:
+      devpayProductCodes: null
+      availabilityZone: us-west-2c,
+      accountId: accountid,
+      privateIp: 1.1.1.1,
+      version: 2010-08-31,
+      region: us-west-2,
+      instanceId: i-id,
+      billingProducts: null,
+      instanceType: c3.xlarge,
+      imageId: ami-id,
+      pendingTime: 2016-08-25T16:22:18Z,
+      architecture: x86_64,
+      kernelId: null,
+      ramdiskId: null
+    signature: signature
+    rsa2048: rsa2048
+  fws:
+    instance-monitoring: enabled
