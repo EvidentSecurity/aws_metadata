@@ -30,44 +30,62 @@ Or install it yourself as:
 
 ## Usage for `AWS::Instance`
 
-```
+```ruby
 puts AWS::Instance.metadata.instance_id
 puts AWS::Instance.dynamic.instance_identity.document.account_id
 puts AWS::Instance.user_data
 ```
 
 To return stubbed responses, you can add this to an initializer:
-```
+
+```ruby
 AWS::Metadata.configure do |config|
   config.stub_responses = Rails.env =~ /development|test/
 end
 ```
+
+or
+
+```ruby
+AWS::Metadata.stub_responses = Rails.env =~ /development|test/
+```
+
 This will prevent HTTP calls to 169.254.169.254 and return canned results.
 When stubbing responses, both `AWS::Instance` and `AWS::StackOutput` will be stubbed.
 
 ## Usage for `AWS::StackOutput`
 You must first configure the gem in an initializer.
-```
+
+```ruby
 AWS::Metadata.configure do |config|
   config.cfn_stack_name = 'your_cfn_stack_name' # As identified by the Stack Name column in the CloudFormation Section of the AWS console.
 end
 ```
 
+or
+
+```ruby
+AWS::Metadata.cfn_stack_name = 'your_cfn_stack_name'
+AWS::StackOutput.get
+```
+
 Methods are dynamically generated from the Outputs that have been defined for the configured `cfn_stack_name`.
 So if you have an output key of `S3BucketName` defined, you can get the value with
 
-```
+```ruby
 puts AWS::StackOutput.s3_bucket_name
 ```
 
 If you have `stub_responses` set to true, you will have to create a `cfn_dev_output.yml` file with the keys you have defined as Outputs for your Cloud Formation stack.
 For example, to stub the response of a stack that has a key of `S3BucketName`, create a `cfn_dev_output.yml` file with the contents of:
-```
+
+```yaml
 S3BucketName: my_unique_bucket_for_this_stack
 ```
 
 By default, the gem will look for `cfn_dev_output.yml` in the `config` directory of a Rails app.  If you are not using this gem in a Rails app, then you need to specify the path in the initializer.
-```
+
+```ruby
 AWS::Metadata.configure do |config|
   config.cfn_stack_name = 'your_cfn_stack_name' # As identified by the Stack Name column in the CloudFormation Section of the AWS console.
   config.stub_responses = Rails.env =~ /development|test/
@@ -75,6 +93,14 @@ AWS::Metadata.configure do |config|
 end
 ```
 
+or 
+
+```ruby
+AWS::Metadata.cfn_stack_name = 'your_cfn_stack_name'
+AWS::Metadata.stub_responses = Rails.env =~ /development|test/
+AWS::Metadata.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml`
+AWS::StackOutput.get
+```
 
 ## Contributing
 

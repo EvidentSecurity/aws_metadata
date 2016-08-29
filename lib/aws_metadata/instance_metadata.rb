@@ -5,6 +5,7 @@ require 'net/http'
 
 module AWS
   class Instance
+    # @private
     def self.method_missing name, *args, &block
       @@root ||= Instance.new
       @@root.method(name).call(*args, &block)
@@ -12,6 +13,7 @@ module AWS
 
     # Can't be the first one to make that pun.
     # Still proud.
+    # @private
     class Hashish < Hash
       def initialize(hash = {})
         hash.each do |key, value|
@@ -28,6 +30,7 @@ module AWS
       end
     end
 
+    # @private
     class Treeish < Hashish
       private
       def initialize http, prefix
@@ -52,6 +55,7 @@ module AWS
     # Amazon, Y U NO trailing slash entries
     # in /, /$version and /$version/dynamic/??
     # There is waaay too much code here.
+    # @private
     def initialize version='latest', host='169.254.169.254', port='80'
       if AWS::Metadata.stub_responses
         load_stubs
@@ -73,6 +77,7 @@ module AWS
       end
     end
 
+    # @private
     def self.query http, path
       rep = http.request Net::HTTP::Get.new path
       unless Net::HTTPOK === rep
@@ -82,6 +87,7 @@ module AWS
     end
 
     # Helper method to provide "stubs" for non aws deployments
+    # @private
     def load_stubs
       responses = YAML.load_file(File.expand_path(File.dirname(__FILE__) + '/../../test/fixtures/responses.yml'))
       @metadata = Hashish.new responses[:metadata]
@@ -90,6 +96,9 @@ module AWS
       @dynamic['instance-identity']['document'] = @dynamic['instance-identity']['document'].to_json
     end
 
+    # All the metadata from 169.254.169.254
+    #
+    # The hashes are Hashish objects that allows regular method like calls where all method names are the keys underscored.
     def to_hash
       { :metadata => @metadata, :user_data => @user_data, :dynamic => @dynamic }
     end
