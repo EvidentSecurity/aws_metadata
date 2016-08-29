@@ -3,12 +3,6 @@
 AWS::Metadata has 2 components to it.  `AWS::Instance` and `AWS::StackOutput`
 
 This first, `AWS::Instance`, is mostly identical to https://github.com/airbnb/gem-aws-instmd and exposes the instance metadata information through a Ruby API.
-The code for `AWS::Instance` is mostly a copy directly from the https://github.com/airbnb/gem-aws-instmd repo.  The only differences between `AWS::Instance` and `AWS::InstMD` are:
-
-1. The class name.  We removed the MD(metadata) from the name since this gem also has the StackOutput namespace and it's all really metadata.
-2. `AWS::InstMD.meta_data` to `AWS::Instance.metadata`.  We changed meta_data to metadata to be consistent with the naming in our SDK and APIs.
-3. The `AWS::Instance.dynamic.instance_identity.document` returns a Hashish object you can call methods on, rather than a JSON document that has to be parsed manually into a hash. So `AWS::Instance.dynamic.instance_identity.document.account_id` just works.
-4. We added to ability to have stubbed responses returned.  See the usage section below.
 
 The second, `AWS::StackOutput`, gives you access to the Cloud Formation Outputs you define in your CFN template given a template name. 
 
@@ -89,7 +83,7 @@ By default, the gem will look for `cfn_dev_output.yml` in the `config` directory
 AWS::Metadata.configure do |config|
   config.cfn_stack_name = 'your_cfn_stack_name' # As identified by the Stack Name column in the CloudFormation Section of the AWS console.
   config.stub_responses = Rails.env =~ /development|test/
-  config.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml`
+  config.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml'
 end
 ```
 
@@ -98,11 +92,21 @@ or
 ```ruby
 AWS::Metadata.cfn_stack_name = 'your_cfn_stack_name'
 AWS::Metadata.stub_responses = Rails.env =~ /development|test/
-AWS::Metadata.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml`
+AWS::Metadata.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml'
 AWS::StackOutput.get
 ```
+
+## Differences between `AWS::InstMD` and `AWS::Instance`
+
+The code for `AWS::Instance` is mostly a copy directly from the aws_instmd repo.  The only differences between `AWS::Instance` and `AWS::InstMD` are:
+
+1. The class name.  We removed the MD(metadata) from the name since this gem also has the StackOutput namespace and it's all really metadata.
+2. `AWS::InstMD.meta_data` to `AWS::Instance.metadata`.  We changed meta_data to metadata to be consistent with the naming in our SDK and APIs.
+3. The `AWS::Instance.dynamic.instance_identity.document` returns a Hashish object you can call methods on, rather than a JSON document that has to be parsed manually into a hash. So `AWS::Instance.dynamic.instance_identity.document.account_id` just works.
+4. We added the ability to have stubbed responses returned.  See the usage section below.
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/aws_metadata. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
+Thanks to https://github.com/airbnb for their aws_instmd gem.
