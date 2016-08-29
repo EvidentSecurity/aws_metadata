@@ -1,8 +1,16 @@
 # AWS Metadata
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/aws_metadata`. To experiment with that code, run `bin/console` for an interactive prompt.
+AWS::Metadata has 2 components to it.  `AWS::Instance` and `AWS::StackOutput`
 
-TODO: Delete this and the text above, and describe your gem
+This first, `AWS::Instance`, is mostly identical to https://github.com/airbnb/gem-aws-instmd and exposes the instance metadata information through a Ruby API.
+The code for `AWS::Instance` is mostly a copy directly from the https://github.com/airbnb/gem-aws-instmd repo.  The only differences between `AWS::Instance` and `AWS::InstMD` are:
+
+1. The class name.  We removed the MD(metadata) from the name since this gem also has the StackOutput namespace and it's all really metadata.
+2. `AWS::InstMD.meta_data` to `AWS::Instance.metadata`.  We changed meta_data to metadata to be consistent with the naming in our SDK and APIs.
+3. The `AWS::Instance.dynamic.instance_identity.document` returns a Hashish object you can call methods on, rather than a JSON document that has to be parsed manually into a hash. So `AWS::Instance.dynamic.instance_identity.document.account_id` just works.
+4. We added to ability to have stubbed responses returned.  See the usage section below.
+
+The second, `AWS::StackOutput`, gives you access to the Cloud Formation Outputs you define in your CFN template given a template name. 
 
 ## Installation
 
@@ -20,15 +28,53 @@ Or install it yourself as:
 
     $ gem install aws_metadata
 
-## Usage
+## Usage for `AWS::Instance`
 
-TODO: Write usage instructions here
+```
+puts AWS::Instance.metadata.instance_id
+puts AWS::Instance.dynamic.instance_identity.document.account_id
+puts AWS::Instance.user_data
+```
 
-## Development
+To return stubbed responses, you can add this to an initializer:
+```
+AWS::Metadata.configure do |config|
+  config.stub_responses = Rails.env =~ /development|test/
+end
+```
+This will prevent HTTP calls to 169.254.169.254 and return canned results.
+When stubbing responses, both `AWS::Instance` and `AWS::StackOutput` will be stubbed.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+## Usage for `AWS::StackOutput`
+You must first configure the gem in an initializer.
+```
+AWS::Metadata.configure do |config|
+  config.cfn_stack_name = 'your_cfn_stack_name' # As identified by the Stack Name column in the CloudFormation Section of the AWS console.
+end
+```
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Methods are dynamically generated from the Outputs that have been defined for the configured `cfn_stack_name`.
+So if you have an output key of `S3BucketName` defined, you can get the value with
+
+```
+puts AWS::StackOutput.s3_bucket_name
+```
+
+If you have `stub_responses` set to true, you will have to create a `cfn_dev_output.yml` file with the keys you have defined as Outputs for your Cloud Formation stack.
+For example, to stub the response of a stack that has a key of `S3BucketName`, create a `cfn_dev_output.yml` file with the contents of:
+```
+S3BucketName: my_unique_bucket_for_this_stack
+```
+
+By default, the gem will look for `cfn_dev_output.yml` in the `config` directory of a Rails app.  If you are not using this gem in a Rails app, then you need to specify the path in the initializer.
+```
+AWS::Metadata.configure do |config|
+  config.cfn_stack_name = 'your_cfn_stack_name' # As identified by the Stack Name column in the CloudFormation Section of the AWS console.
+  config.stub_responses = Rails.env =~ /development|test/
+  config.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml`
+end
+```
+
 
 ## Contributing
 

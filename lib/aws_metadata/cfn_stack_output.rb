@@ -1,5 +1,4 @@
 require 'yaml'
-require 'active_support/core_ext/string/inflections'
 
 module AWS
   module StackOutput
@@ -29,6 +28,7 @@ module AWS
     end
 
     def self.dev_outputs
+      require 'erb'
       output        = Struct.new(:output_key, :output_value)
       yaml          = Pathname.new(File.join(AWS::Metadata.cfn_dev_outputs_path, 'cfn_dev_output.yml'))
       output_values = YAML.load(ERB.new(yaml.read).result)

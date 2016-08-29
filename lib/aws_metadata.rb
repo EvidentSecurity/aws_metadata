@@ -1,6 +1,7 @@
-require "aws_metadata/version"
-require "aws_metadata/instance_metadata"
-require "aws_metadata/cfn_stack_output"
+require_relative "extensions/string" unless String.method_defined?(:underscore)
+require_relative "aws_metadata/version"
+require_relative "aws_metadata/instance_metadata"
+require_relative "aws_metadata/cfn_stack_output"
 
 module AWS
   module Metadata

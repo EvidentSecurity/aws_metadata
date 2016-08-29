@@ -1,4 +1,4 @@
-# Stolen code from https://github.com/airbnb/gem-aws-Instance
+# Original code from https://github.com/airbnb/gem-aws-Instance
 # It's just a single file so eliminate the dependency by putting it in the repo directly and add parsing for the document object.
 # Also added response stubs
 require 'net/http'
@@ -15,7 +15,7 @@ module AWS
     class Hashish < Hash
       def initialize(hash = {})
         hash.each do |key, value|
-          self[key.to_s.underscore.dasherize] = value.is_a?(Hash) ? Hashish.new(value) : value
+          self[key.to_s.underscore.gsub('_', '-')] = value.is_a?(Hash) ? Hashish.new(value) : value
         end
       end
 
@@ -23,7 +23,7 @@ module AWS
         if name.to_s == 'document'
           Hashish.new(JSON.parse(self['document']))
         else
-          self[name.to_s.dasherize]
+          self[name.to_s.gsub('_', '-')]
         end
       end
     end
