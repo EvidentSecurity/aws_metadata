@@ -5,12 +5,12 @@ require 'aws_metadata/version'
 
 Gem::Specification.new do |spec|
   spec.name    = "aws_metadata"
-  spec.version = AwsCfnStackOutput::VERSION
+  spec.version = AWS::Metadata::VERSION
   spec.authors = ['Evident.io']
   spec.email   = ['support@evident.io']
 
   spec.summary  = %q{Gem to provide the Instance Metadata and Cloud Formation template outputs.}
-  spec.homepage = "https://git.int.evident.io/full-stack/aws-metadata"
+  spec.homepage = "https://github.com/EvidentSecurity/aws_metadata"
 
 
   spec.files         = `git ls-files`.split($/)
