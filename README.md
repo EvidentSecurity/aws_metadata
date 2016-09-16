@@ -45,6 +45,27 @@ AWS::Metadata.stub_responses = Rails.env =~ /development|test/
 ```
 
 This will prevent HTTP calls to 169.254.169.254 and return canned results.
+
+If you have `stub_responses` set to true, you can create a `aws_identity_stubs.yml` file with the data you want returned.
+By default, the gem will look for `aws_identity_stubs.yml` in the `config` directory of a Rails app.  
+If you don't setup your own `aws_identity_stubs.yml`, then the gem will use it's own found in test/fixtures/aws_identity_stubs.yml.  You can also use this file as a template for creating your own with custom data.
+If you are not using this gem in a Rails app, then you need to specify the path in the initializer.
+
+```ruby
+AWS::Metadata.configure do |config|
+  config.stub_responses = Rails.env =~ /development|test/
+  config.aws_identity_stubs_path = 'path/to/aws_identity_stubs.yml'
+end
+```
+
+or 
+
+```ruby
+AWS::Metadata.stub_responses = Rails.env =~ /development|test/
+AWS::Metadata.aws_identity_stubs_path = 'path/to/aws_identity_stubs.yml'
+AWS::StackOutput.get
+````
+
 When stubbing responses, both `AWS::Instance` and `AWS::StackOutput` will be stubbed.
 
 ## Usage for `AWS::StackOutput`

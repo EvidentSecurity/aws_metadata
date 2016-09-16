@@ -52,11 +52,28 @@ module AWS
       @stack_name
     end
 
+    # Set the path to the aws_identity_stubs.yml
+    #
+    # Only needs to be set if {.stub_responses} is set to true.
+    #
+    # @return [String]
+    def self.aws_identity_stubs_path=(aws_identity_stubs_path)
+      @aws_identity_stubs_path = aws_identity_stubs_path
+    end
+
+    # Set the path to the aws_identity_stubs.yml
+    #
+    # Defaults to the config directory in a Rails application, or the file in tests/fixtures/aws_identity_stubs.yml if not in a Rails app.
+    #
+    # @return [String]
+    def self.aws_identity_stubs_path
+      @aws_identity_stubs_path ||= defined?(Rails) ? Rails.root.join('config') : File.expand_path(File.dirname(__FILE__) + '/../test/fixtures')
+    end
+
     # Set the path to the cfn_dev_output.yml file with the keys you have defined as Outputs for your Cloud Formation stack.
     #
     # Only needs to be set if {.stub_responses} is set to true.
     #
-    # @param stack_name
     # @return [String]
     def self.cfn_dev_outputs_path=(dev_outputs_path)
       @dev_outputs_path = dev_outputs_path
@@ -66,7 +83,6 @@ module AWS
     #
     # Defaults to the config directory in a Rails application.
     #
-    # @param stack_name
     # @return [String]
     def self.cfn_dev_outputs_path
       @dev_outputs_path ||= defined?(Rails) ? Rails.root.join('config') : ''

@@ -89,7 +89,8 @@ module AWS
     # Helper method to provide "stubs" for non aws deployments
     # @private
     def load_stubs
-      responses = YAML.load_file(File.expand_path(File.dirname(__FILE__) + '/../../test/fixtures/responses.yml'))
+      yaml = Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
+      responses = YAML.load(ERB.new(yaml.read).result)
       @metadata = Hashish.new responses[:metadata]
       @user_data = responses[:user_data]
       @dynamic = Hashish.new responses[:dynamic]
