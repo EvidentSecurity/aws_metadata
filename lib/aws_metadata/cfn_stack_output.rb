@@ -44,6 +44,9 @@ module AWS
           a << output.new(key, value)
         end
       end
+    rescue
+      puts "#{yaml} not found AWS::StackOutput will not be available."
+      []
     end
   end
 end
