@@ -81,7 +81,7 @@ module AWS
     def self.query http, path
       rep = http.request Net::HTTP::Get.new path
       unless Net::HTTPOK === rep
-        raise Net::HTTPBadResponse, "#{rep.code} #{path}"
+        return nil
       end
       rep.body
     end
