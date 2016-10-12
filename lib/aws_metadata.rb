@@ -18,7 +18,7 @@ module AWS
     #   end
     def self.configure
       yield self
-      AWS::StackOutput.get
+      AWS::StackOutput.get unless disable_cfn_stack_output
     end
 
     # Set to true to return canned Instance responses and stubbed StackOutput responses from a cfn_dev_output.yml file.
@@ -35,6 +35,22 @@ module AWS
     # @return [Boolean]
     def self.stub_responses
       @stub_responses
+    end
+
+    # Set to true to disable the AWS::StackOutput object and prevent it from loading.
+    #
+    # @param disable_cfn_stack_output [Boolean]
+    # @return [Boolean]
+    def self.disable_cfn_stack_output=(disable_cfn_stack_output = false)
+      @disable_cfn_stack_output = disable_cfn_stack_output
+    end
+
+    # The flag whether or not to disable the AWS::StackOutput object and prevent it from loading.
+    #
+    # @param stub_responses [Boolean]
+    # @return [Boolean]
+    def self.disable_cfn_stack_output
+      @disable_cfn_stack_output
     end
 
     # Set the stack name as identified by the Stack Name column in the CloudFormation Section of the AWS console.

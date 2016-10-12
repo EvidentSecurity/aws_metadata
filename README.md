@@ -117,6 +117,17 @@ AWS::Metadata.cfn_dev_outputs_path = 'path/to/cfn_dev_output.yml'
 AWS::StackOutput.get
 ```
 
+The application user's role will need to be authorized to perform: cloudformation:DescribeStacks.
+
+If the `AWS::StackOutput` object is not needed, then you can disable it.
+
+```ruby
+AWS::Metadata.configure do |config|
+  config.disable_cfn_stack_output = true
+end
+```
+
+
 ## Differences between `AWS::InstMD` and `AWS::Instance`
 
 The code for `AWS::Instance` is mostly a copy directly from the aws_instmd repo.  The only differences between `AWS::Instance` and `AWS::InstMD` are:
