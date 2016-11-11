@@ -61,20 +61,10 @@ module AWS
         load_stubs
         return
       end
-      http       = Net::HTTP.new host, port
-      @metadata = Treeish.new http, "/#{version}/meta-data/"
-      @user_data = Instance.query http, "/#{version}/user-data"
-      @dynamic   = Hashish.new
-
-      begin
-        dynamic_stuff = Instance.query(http, "/#{version}/dynamic/").lines
-      rescue
-        dynamic_stuff = []
-      end
-      dynamic_stuff.each do |e|
-        e           = e.chomp.chomp '/'
-        @dynamic[e] = Treeish.new http, "/#{version}/dynamic/#{e}/"
-      end
+      http      = Net::HTTP.new host, port
+      load_metadata(http, version)
+      load_user_data(http, version)
+      load_dynamic(http, version)
     end
 
     # @private
@@ -86,22 +76,60 @@ module AWS
       rep.body
     end
 
-    # Helper method to provide "stubs" for non aws deployments
-    # @private
-    def load_stubs
-      yaml = Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
-      responses = YAML.load(ERB.new(yaml.read).result)
-      @metadata = Hashish.new responses[:metadata]
-      @user_data = responses[:user_data]
-      @dynamic = Hashish.new responses[:dynamic]
-      @dynamic['instance-identity']['document'] = @dynamic['instance-identity']['document'].to_json
-    end
-
     # All the metadata from 169.254.169.254
     #
     # The hashes are Hashish objects that allows regular method like calls where all method names are the keys underscored.
     def to_hash
       { :metadata => @metadata, :user_data => @user_data, :dynamic => @dynamic }
+    end
+
+    private
+
+    # Load data from the meta-data URL
+    # @private
+    def load_metadata(http, version)
+      tries ||= 1
+      @metadata = Treeish.new http, "/#{version}/meta-data/"
+      raise 'no metadata' if @metadata.nil?
+    rescue
+      raise if tries >= 10
+      sleep 1
+      tries += 1
+      retry
+    end
+
+    # Load data from the user-data URL
+    # @private
+    def load_user_data(http, version)
+      @user_data = Instance.query http, "/#{version}/user-data"
+    rescue
+      @user_data = nil
+    end
+
+    # Load data from the dynamic URL
+    # @private
+    def load_dynamic(http, version)
+      @dynamic = Hashish.new
+      begin
+        dynamic_stuff = Instance.query(http, "/#{version}/dynamic/").lines
+      rescue
+        dynamic_stuff = []
+      end
+      dynamic_stuff.each do |e|
+        e           = e.chomp.chomp '/'
+        @dynamic[e] = Treeish.new http, "/#{version}/dynamic/#{e}/"
+      end
+    end
+
+    # Helper method to provide "stubs" for non aws deployments
+    # @private
+    def load_stubs
+      yaml                                      = Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
+      responses                                 = YAML.load(ERB.new(yaml.read).result)
+      @metadata                                 = Hashish.new responses[:metadata]
+      @user_data                                = responses[:user_data]
+      @dynamic                                  = Hashish.new responses[:dynamic]
+      @dynamic['instance-identity']['document'] = @dynamic['instance-identity']['document'].to_json
     end
   end
 end
