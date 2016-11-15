@@ -31,7 +31,7 @@ puts AWS::Instance.user_data
 ```
 
 AWS::Instance is lazy loaded and only makes calls to 169.254.169.254 for the paths requested.  In other words, the entire
-object hierarchy is not built up front any more, thereby reducing the total number of HTTP requests and reducing the chance
+object hierarchy is not built at once, thereby reducing the total number of HTTP requests and reducing the chance
 of being throttled by AWS.
 
 You can alternatively pass the relative endpoint to `metadata` and `dynamic`
