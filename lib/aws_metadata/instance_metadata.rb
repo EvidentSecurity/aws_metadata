@@ -8,15 +8,15 @@ module AWS
     def self.metadata(path: nil, version: 'latest', host: '169.254.169.254', port: '80')
       load_stubs
       url_prefix = "/#{version}/meta-data/"
-      if path.present?
+      if path.nil?
+        @metadata ||= Treeish.new http(host, port), url_prefix
+        raise 'no metadata' if @metadata.blank? # There should always be metadata
+        @metadata
+      else
         @metadata_path       ||= Hashish.new
         @metadata_path[path] ||= value_by_path(path, @metadata) do
           query(http(host, port), "#{url_prefix}#{path}")
         end
-      else
-        @metadata ||= Treeish.new http(host, port), url_prefix
-        raise 'no metadata' if @metadata.blank? # There should always be metadata
-        @metadata
       end
     end
 
@@ -28,13 +28,13 @@ module AWS
     def self.dynamic(path: nil, version: 'latest', host: '169.254.169.254', port: '80')
       load_stubs
       url_prefix = "/#{version}/dynamic/"
-      if path.present?
+      if path.nil?
+        @dynamic ||= Treeish.new http(host, port), url_prefix
+      else
         @dynamic_path       ||= Hashish.new
         @dynamic_path[path] ||= value_by_path(path, @dynamic) do
           query(http(host, port), "#{url_prefix}#{path}")
         end
-      else
-        @dynamic ||= Treeish.new http(host, port), url_prefix
       end
     end
 
@@ -108,7 +108,7 @@ module AWS
     # Helper method to provide "stubs" for non aws environments, ie. development and test
     # @private
     def self.load_stubs
-      return unless AWS::Metadata.stub_responses && @metadata.blank?
+      return unless AWS::Metadata.stub_responses && @metadata.nil?
       @yaml                                     ||= Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
       @responses                                ||= YAML.load(ERB.new(@yaml.read).result)
       @metadata                                 ||= Hashish.new @responses[:metadata]
