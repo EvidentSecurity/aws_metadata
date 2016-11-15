@@ -30,6 +30,27 @@ puts AWS::Instance.dynamic.instance_identity.document.account_id
 puts AWS::Instance.user_data
 ```
 
+AWS::Instance is lazy loaded and only makes calls to 169.254.169.254 for the paths requested.  In other words, the entire
+object hierarchy is not built at once, thereby reducing the total number of HTTP requests and reducing the chance
+of being throttled by AWS.
+
+You can alternatively pass the relative endpoint to `metadata` and `dynamic`
+
+```ruby
+puts AWS::Instance.metadata(path: 'instance-id')
+puts AWS::Instance.dynamic( path: ('instance-identity/document').account_id
+```
+
+This has the added benefit of reducing the number of HTTP calls even further if needed/desired.  For instance `AWS::Instance.metadata.instance_id`
+will make 2 calls, 1 for `/meta-data` and another for `meta-data/instance-id`, where `AWS::Instance.metadata(path: 'instance-id')`
+will only make a single call to `/meta-data/instance-id`.  
+
+All calls are cached.
+
+Calls are retried upto 10 times in 1 second intervals if a 200 response is not received.
+
+
+
 To return stubbed responses, you can add this to an initializer:
 
 ```ruby
@@ -135,7 +156,11 @@ The code for `AWS::Instance` is mostly a copy directly from the aws_instmd repo.
 1. The class name.  We removed the MD(metadata) from the name since this gem also has the StackOutput namespace and it's all really metadata.
 2. `AWS::InstMD.meta_data` to `AWS::Instance.metadata`.  We changed meta_data to metadata to be consistent with the naming in our SDK and APIs.
 3. The `AWS::Instance.dynamic.instance_identity.document` returns a Hashish object you can call methods on, rather than a JSON document that has to be parsed manually into a hash. So `AWS::Instance.dynamic.instance_identity.document.account_id` just works.
-4. We added the ability to have stubbed responses returned.  See the usage section below.
+4. We added the ability to have stubbed responses returned.  See the usage section above.
+
+## Dependencies
+ Ruby >= 2.0
+ aws-sdk gem
 
 ## Contributing
 
