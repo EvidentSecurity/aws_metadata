@@ -4,11 +4,45 @@
 require 'net/http'
 
 module AWS
-  class Instance
-    # @private
-    def self.method_missing name, *args, &block
-      @@root ||= Instance.new
-      @@root.method(name).call(*args, &block)
+  module Instance
+    def self.metadata(path: nil, version: 'latest', host: '169.254.169.254', port: '80')
+      load_stubs
+      url_prefix = "/#{version}/meta-data/"
+      if path.present?
+        @metadata_path       ||= Hashish.new
+        @metadata_path[path] ||= value_by_path(path, @metadata) do
+          query(http(host, port), "#{url_prefix}#{path}")
+        end
+      else
+        @metadata ||= Treeish.new http(host, port), url_prefix
+        raise 'no metadata' if @metadata.blank? # There should always be metadata
+        @metadata
+      end
+    end
+
+    def self.user_data(version: 'latest', host: '169.254.169.254', port: '80')
+      load_stubs
+      @user_data ||= query(http(host, port), "/#{version}/user-data")
+    end
+
+    def self.dynamic(path: nil, version: 'latest', host: '169.254.169.254', port: '80')
+      load_stubs
+      url_prefix = "/#{version}/dynamic/"
+      if path.present?
+        @dynamic_path       ||= Hashish.new
+        @dynamic_path[path] ||= value_by_path(path, @dynamic) do
+          query(http(host, port), "#{url_prefix}#{path}")
+        end
+      else
+        @dynamic ||= Treeish.new http(host, port), url_prefix
+      end
+    end
+
+    # All the metadata from 169.254.169.254
+    #
+    # The hashes are Hashish objects that allows regular method like calls where all method names are the keys underscored.
+    def self.to_hash
+      { :metadata => metadata.merge(Hash(@metadata_path)), :user_data => user_data, :dynamic => dynamic.merge(Hash(@dynamic_path)) }
     end
 
     # Can't be the first one to make that pun.
@@ -21,115 +55,76 @@ module AWS
         end
       end
 
-      def method_missing name
-        if name.to_s == 'document'
-          Hashish.new(JSON.parse(self['document']))
-        else
-          self[name.to_s.gsub('_', '-')]
-        end
+      def method_missing(name)
+        attr       = name.to_s.gsub('_', '-')
+        self[attr] = self[attr].call if self[attr].is_a?(Proc)
+        self[attr]
       end
     end
 
     # @private
     class Treeish < Hashish
       private
-      def initialize http, prefix
-        entries = Instance.query http, prefix
+      def initialize(http, prefix)
+        entries = Instance.query(http, prefix)
         entries.lines.each do |l|
           l.chomp!
           if l.end_with? '/'
-            self[l[0..-2]] = Treeish.new http, "#{prefix}#{l}"
+            self[l[0..-2]] = Proc.new { Treeish.new http, "#{prefix}#{l}" }
             # meta-data/public-keys/ entries have a '0=foo' format
           elsif l =~ /(\d+)=(.*)/
             number, name = $1, $2
-            self[name]   = Treeish.new http, "#{prefix}#{number}/"
+            self[name]   = Proc.new { Treeish.new http, "#{prefix}#{number}/" }
           else
-            self[l] = Instance.query http, "#{prefix}#{l}"
+            self[l] = Proc.new { Instance.query(http, "#{prefix}#{l}") }
           end
         end
       end
     end
 
-    attr_accessor :user_data, :metadata, :dynamic
+    private_class_method
 
-    # Amazon, Y U NO trailing slash entries
-    # in /, /$version and /$version/dynamic/??
-    # There is waaay too much code here.
     # @private
-    def initialize version='latest', host='169.254.169.254', port='80'
-      if AWS::Metadata.stub_responses
-        load_stubs
-        return
-      end
-      http      = Net::HTTP.new host, port
-      load_metadata(http, version)
-      load_user_data(http, version)
-      load_dynamic(http, version)
+    def self.http(host, port)
+      @http ||= Net::HTTP.new host, port
     end
 
     # @private
-    def self.query http, path
-      rep = http.request Net::HTTP::Get.new path
-      unless Net::HTTPOK === rep
-        return nil
-      end
-      rep.body
-    end
-
-    # All the metadata from 169.254.169.254
-    #
-    # The hashes are Hashish objects that allows regular method like calls where all method names are the keys underscored.
-    def to_hash
-      { :metadata => @metadata, :user_data => @user_data, :dynamic => @dynamic }
-    end
-
-    private
-
-    # Load data from the meta-data URL
-    # @private
-    def load_metadata(http, version)
+    def self.query(http, path)
       tries ||= 1
-      @metadata = Treeish.new http, "/#{version}/meta-data/"
-      raise 'no metadata' if @metadata.nil?
+      rep   = http.request Net::HTTP::Get.new path
+      raise "bad request: #{path}" unless Net::HTTPOK === rep
+      value = JSON.parse(rep.body)
+      value.is_a?(Hash) ? Hashish.new(value) : value
+    rescue JSON::ParserError
+      rep.body
     rescue
-      raise if tries >= 10
+      return '' if tries >= 10
       sleep 1
       tries += 1
       retry
     end
 
-    # Load data from the user-data URL
+    # Helper method to provide "stubs" for non aws environments, ie. development and test
     # @private
-    def load_user_data(http, version)
-      @user_data = Instance.query http, "/#{version}/user-data"
-    rescue
-      @user_data = nil
-    end
-
-    # Load data from the dynamic URL
-    # @private
-    def load_dynamic(http, version)
-      @dynamic = Hashish.new
-      begin
-        dynamic_stuff = Instance.query(http, "/#{version}/dynamic/").lines
-      rescue
-        dynamic_stuff = []
-      end
-      dynamic_stuff.each do |e|
-        e           = e.chomp.chomp '/'
-        @dynamic[e] = Treeish.new http, "/#{version}/dynamic/#{e}/"
-      end
-    end
-
-    # Helper method to provide "stubs" for non aws deployments
-    # @private
-    def load_stubs
-      yaml                                      = Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
-      responses                                 = YAML.load(ERB.new(yaml.read).result)
-      @metadata                                 = Hashish.new responses[:metadata]
-      @user_data                                = responses[:user_data]
-      @dynamic                                  = Hashish.new responses[:dynamic]
+    def self.load_stubs
+      return unless AWS::Metadata.stub_responses && @metadata.blank?
+      @yaml                                     ||= Pathname.new(File.join(AWS::Metadata.aws_identity_stubs_path, 'aws_identity_stubs.yml'))
+      @responses                                ||= YAML.load(ERB.new(@yaml.read).result)
+      @metadata                                 ||= Hashish.new @responses[:metadata]
+      @user_data                                ||= @responses[:user_data]
+      @dynamic                                  ||= Hashish.new @responses[:dynamic]
       @dynamic['instance-identity']['document'] = @dynamic['instance-identity']['document'].to_json
+    end
+
+    def self.value_by_path(path, obj)
+      if AWS::Metadata.stub_responses
+        path.split('/').inject(obj) do |o, method|
+          o.send method.to_s.underscore
+        end
+      else
+        yield
+      end
     end
   end
 end

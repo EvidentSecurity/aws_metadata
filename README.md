@@ -30,6 +30,27 @@ puts AWS::Instance.dynamic.instance_identity.document.account_id
 puts AWS::Instance.user_data
 ```
 
+AWS::Instance is lazy loaded and only makes calls to 169.254.169.254 for the paths requested.  In other words, the entire
+object hierarchy is not built up front any more, thereby reducing the total number of HTTP requests and reducing the chance
+of being throttled by AWS.
+
+You can alternatively pass the relative endpoint to `metadata` and `dynamic`
+
+```ruby
+puts AWS::Instance.metadata(path: 'instance-id')
+puts AWS::Instance.dynamic( path: ('instance-identity/document').account_id
+```
+
+This has the added benefit of reducing the number of HTTP calls even further if needed/desired.  For instance `AWS::Instance.metadata.instance_id`
+will make 2 calls, 1 for `/meta-data` and another for `meta-data/instance-id`, where `AWS::Instance.metadata(path: 'instance-id')`
+will only make a single call to `/meta-data/instance-id`.  
+
+All calls are cached.
+
+Calls are retried upto 10 times in 1 second intervals if a 200 response is not received.
+
+
+
 To return stubbed responses, you can add this to an initializer:
 
 ```ruby
