@@ -114,7 +114,6 @@ module AWS
       @metadata                                 ||= Hashish.new @responses[:metadata]
       @user_data                                ||= @responses[:user_data]
       @dynamic                                  ||= Hashish.new @responses[:dynamic]
-      @dynamic['instance-identity']['document'] = @dynamic['instance-identity']['document'].to_json
     end
 
     def self.value_by_path(path, obj)
