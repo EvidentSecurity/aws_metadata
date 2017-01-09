@@ -38,7 +38,7 @@ You can alternatively pass the relative endpoint to `metadata` and `dynamic`
 
 ```ruby
 puts AWS::Instance.metadata(path: 'instance-id')
-puts AWS::Instance.dynamic( path: ('instance-identity/document').account_id
+puts AWS::Instance.dynamic(path: 'instance-identity/document').account_id
 ```
 
 This has the added benefit of reducing the number of HTTP calls even further if needed/desired.  For instance `AWS::Instance.metadata.instance_id`
