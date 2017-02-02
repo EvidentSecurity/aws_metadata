@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    aws_metadata (0.2.2)
+    aws_metadata (0.2.3)
       aws-sdk
 
 GEM

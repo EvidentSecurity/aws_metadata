@@ -16,22 +16,23 @@ module AWS
       end
     end
 
-    private_class_method
-
     # @private
     def self.client
       @client ||= Aws::CloudFormation::Client.new(region: AWS::Instance.dynamic.instance_identity.document.region, stub_responses: AWS::Metadata.stub_responses)
     end
+    private_class_method :client
 
     # @private
     def self.stack
       @stack ||= client.describe_stacks(stack_name: AWS::Metadata.cfn_stack_name).first.stacks.first
     end
+    private_class_method :stack
 
     # @private
     def self.stack_outputs
       @outputs ||= AWS::Metadata.stub_responses ? dev_outputs : stack.outputs
     end
+    private_class_method :stack_outputs
 
     # @private
     def self.dev_outputs
@@ -48,5 +49,6 @@ module AWS
       puts "#{yaml} not found AWS::StackOutput will not be available."
       []
     end
+    private_class_method :dev_outputs
   end
 end

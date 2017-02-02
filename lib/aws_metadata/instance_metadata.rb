@@ -82,12 +82,12 @@ module AWS
       end
     end
 
-    private_class_method
 
     # @private
     def self.http(host, port)
       @http ||= Net::HTTP.new host, port
     end
+    private_class_method :http
 
     # @private
     def self.query(http, path)
@@ -104,6 +104,7 @@ module AWS
       tries += 1
       retry
     end
+    private_class_method :query
 
     # Helper method to provide "stubs" for non aws environments, ie. development and test
     # @private
@@ -115,6 +116,7 @@ module AWS
       @user_data                                ||= @responses[:user_data]
       @dynamic                                  ||= Hashish.new @responses[:dynamic]
     end
+    private_class_method :load_stubs
 
     def self.value_by_path(path, obj)
       if AWS::Metadata.stub_responses
@@ -125,5 +127,6 @@ module AWS
         yield
       end
     end
+    private_class_method :value_by_path
   end
 end
