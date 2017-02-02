@@ -13,15 +13,15 @@
       LastUpdated: 2016-08-26T13:06:48Z
       InstanceProfileArn: arn:aws:iam::account:instance-profile/Role
       InstanceProfileId: Profile ID
-      security-credentials:
-        Role:
-          Code: Success
-          LastUpdated: 2016-08-26T13:08:20Z
-          Type: AWS-HMAC
-          AccessKeyId: access id
-          SecretAccessKey: secret key
-          Token: token
-          Expiration: 2016-08-26T19:21:06Z
+    security-credentials:
+      Role:
+        Code: Success
+        LastUpdated: 2016-08-26T13:08:20Z
+        Type: AWS-HMAC
+        AccessKeyId: access id
+        SecretAccessKey: secret key
+        Token: token
+        Expiration: 2016-08-26T19:21:06Z
   instance-action: none
   instance-id: i-id
   instance-type: c3.xlarge
