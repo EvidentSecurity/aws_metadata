@@ -82,13 +82,6 @@ module AWS
       end
     end
 
-
-    # @private
-    def self.http(host, port)
-      @http ||= Net::HTTP.new host, port
-    end
-    private_class_method :http
-
     # @private
     def self.query(http, path)
       tries ||= 1
@@ -104,7 +97,12 @@ module AWS
       tries += 1
       retry
     end
-    private_class_method :query
+
+    # @private
+    def self.http(host, port)
+      @http ||= Net::HTTP.new host, port
+    end
+    private_class_method :http
 
     # Helper method to provide "stubs" for non aws environments, ie. development and test
     # @private
