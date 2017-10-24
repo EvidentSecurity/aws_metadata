@@ -4,7 +4,7 @@ AWS::Metadata has 2 components to it.  `AWS::Instance` and `AWS::StackOutput`
 
 This first, `AWS::Instance`, is mostly identical to https://github.com/airbnb/gem-aws-instmd and exposes the instance metadata information through a Ruby API.
 
-The second, `AWS::StackOutput`, gives you access to the Cloud Formation Outputs you define in your CFN template given a template name. 
+The second, `AWS::StackOutput`, gives you access to the Cloud Formation Outputs you define in your CFN template given a template name. Usage of `AWS::StackOuput` requires installing and requiring the CloudFormation SDK.
 
 ## Installation
 
@@ -43,13 +43,11 @@ puts AWS::Instance.dynamic(path: 'instance-identity/document').account_id
 
 This has the added benefit of reducing the number of HTTP calls even further if needed/desired.  For instance `AWS::Instance.metadata.instance_id`
 will make 2 calls, 1 for `/meta-data` and another for `meta-data/instance-id`, where `AWS::Instance.metadata(path: 'instance-id')`
-will only make a single call to `/meta-data/instance-id`.  
+will only make a single call to `/meta-data/instance-id`.
 
 All calls are cached.
 
 Calls are retried upto 10 times in 1 second intervals if a 200 response is not received.
-
-
 
 To return stubbed responses, you can add this to an initializer:
 
@@ -68,7 +66,7 @@ AWS::Metadata.stub_responses = Rails.env =~ /development|test/
 This will prevent HTTP calls to 169.254.169.254 and return canned results.
 
 If you have `stub_responses` set to true, you can create a `aws_identity_stubs.yml` file with the data you want returned.
-By default, the gem will look for `aws_identity_stubs.yml` in the `config` directory of a Rails app.  
+By default, the gem will look for `aws_identity_stubs.yml` in the `config` directory of a Rails app.
 If you don't setup your own `aws_identity_stubs.yml`, then the gem will use it's own found in test/fixtures/aws_identity_stubs.yml.  You can also use this file as a template for creating your own with custom data.
 If you are not using this gem in a Rails app, then you need to specify the path in the initializer.
 
@@ -79,7 +77,7 @@ AWS::Metadata.configure do |config|
 end
 ```
 
-or 
+or
 
 ```ruby
 AWS::Metadata.stub_responses = Rails.env =~ /development|test/
@@ -129,7 +127,7 @@ AWS::Metadata.configure do |config|
 end
 ```
 
-or 
+or
 
 ```ruby
 AWS::Metadata.cfn_stack_name = 'your_cfn_stack_name'
